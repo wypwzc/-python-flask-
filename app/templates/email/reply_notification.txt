@@ -1,0 +1,13 @@
+回复通知
+
+{{ reply.author_name }} 回复了您的评论：
+
+您的评论：
+{{ comment.content }}
+
+回复内容：
+{{ reply.content }}
+
+时间：{{ reply.created_at.strftime('%Y-%m-%d %H:%M') if reply.created_at else '未知' }}
+
+此邮件由博客系统自动发送

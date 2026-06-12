@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #198754; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .content { background: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; }
+        .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px; }
+        .comment-box { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>💬 回复通知</h2>
+        </div>
+        <div class="content">
+            <p>您在上发表了评论，<strong>{{ reply.author_name }}</strong> 给您回复了：</p>
+
+            <div class="comment-box">
+                <h4>您的评论：</h4>
+                <p>{{ comment.content }}</p>
+            </div>
+
+            <div class="comment-box">
+                <h4>回复内容：</h4>
+                <p>{{ reply.content }}</p>
+                <small>时间：{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+        </div>
+        <div class="footer">
+            <p>此邮件由博客系统自动发送，请勿回复</p>
+        </div>
+    </div>
+</body>
+</html>

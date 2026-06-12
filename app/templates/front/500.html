@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误 - 个人博客{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto text-center py-5">
+        <div class="error-page">
+            <h1 class="display-1 text-muted">500</h1>
+            <h4 class="mb-4"><i class="bi bi-exclamation-triangle"></i> 服务器内部错误</h4>
+            <p class="text-muted mb-4">抱歉，服务器遇到了问题，请稍后再试</p>
+            <div>
+                <a href="{{ url_for('front.index') }}" class="btn btn-primary">
+                    <i class="bi bi-house-door"></i> 返回首页
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

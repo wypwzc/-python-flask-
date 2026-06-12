@@ -1,0 +1,193 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{% if is_edit %}编辑文章{% else %}写文章{% endif %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>
+        <i class="bi {% if is_edit %}bi-pencil{% else %}bi-plus-lg{% endif %}"></i>
+        {% if is_edit %}编辑文章{% else %}写文章{% endif %}
+    </h3>
+    <a href="{{ url_for('admin.post_list') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> 返回列表
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+                <div class="col-md-9">
+                    <!-- 标题 -->
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+                        {% for error in form.title.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Slug -->
+                    <div class="mb-3">
+                        {{ form.slug.label(class="form-label") }}
+                        {{ form.slug(class="form-control" + (" is-invalid" if form.slug.errors else ""), id="slug") }}
+                        {% for error in form.slug.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <small class="text-muted">URL 别名，用于生成友好的文章链接</small>
+                    </div>
+
+                    <!-- 内容 -->
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), id="content", rows="20") }}
+                        {% for error in form.content.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <small class="text-muted">支持 Markdown 语法</small>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <!-- 发布设置 -->
+                    <div class="card mb-3">
+                        <div class="card-header">发布设置</div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.is_published(class="form-check-input") }}
+                                    {{ form.is_published.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.is_top(class="form-check-input") }}
+                                    {{ form.is_top.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.allow_comment(class="form-check-input") }}
+                                    {{ form.allow_comment.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分类 -->
+                    <div class="card mb-3">
+                        <div class="card-header">分类</div>
+                        <div class="card-body">
+                            {{ form.category_id(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <!-- 标签 -->
+                    <div class="card mb-3">
+                        <div class="card-header">标签</div>
+                        <div class="card-body">
+                            {{ form.tags(class="form-control", placeholder="逗号分隔多个标签") }}
+                            <small class="text-muted">多个标签用逗号分隔</small>
+                        </div>
+                    </div>
+
+                    <!-- 封面图片 -->
+                    <div class="card mb-3">
+                        <div class="card-header">封面图片</div>
+                        <div class="card-body">
+                            {% if is_edit and post.cover_image %}
+                            <div class="mb-2">
+                                <img src="{{ url_for('static', filename=post.cover_image) }}"
+                                     class="img-fluid rounded" alt="当前封面">
+                            </div>
+                            {% endif %}
+                            {{ form.cover_image(class="form-control form-control-sm") }}
+                            {% for error in form.cover_image.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 摘要 -->
+                    <div class="card mb-3">
+                        <div class="card-header">摘要</div>
+                        <div class="card-body">
+                            {{ form.summary(class="form-control form-control-sm", rows="4") }}
+                            <small class="text-muted">留空将自动截取文章前 150 字</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-end mt-3">
+                <a href="{{ url_for('admin.post_list') }}" class="btn btn-secondary">取消</a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 自动生成 slug
+document.querySelector('#title')?.addEventListener('input', function() {
+    const slugField = document.querySelector('#slug');
+    if (!slugField.dataset.manual && !slugField.value) {
+        slugField.value = this.value
+            .toLowerCase()
+            .replace(/[^\w一-鿿\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+    }
+});
+
+document.querySelector('#slug')?.addEventListener('input', function() {
+    this.dataset.manual = this.value ? 'true' : '';
+});
+
+// Markdown 实时预览
+const contentTextarea = document.querySelector('#content');
+const previewContainer = document.createElement('div');
+previewContainer.className = 'mt-3 border rounded p-3 d-none';
+previewContainer.id = 'preview';
+
+if (contentTextarea) {
+    contentTextarea.parentNode.appendChild(previewContainer);
+}
+
+function togglePreview() {
+    const preview = document.getElementById('preview');
+    if (preview.classList.contains('d-none')) {
+        preview.classList.remove('d-none');
+        preview.innerHTML = '<div class="text-muted text-center py-3">预览加载中...</div>';
+        // 使用简单的 Markdown 预览
+        const text = contentTextarea.value;
+        let html = text
+            .replace(/### (.+)/g, '<h5>$1</h5>')
+            .replace(/## (.+)/g, '<h4>$1</h4>')
+            .replace(/# (.+)/g, '<h3>$1</h3>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/`(.+?)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
+        preview.innerHTML = html;
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+
+// 添加预览切换按钮
+if (contentTextarea) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-sm btn-outline-secondary mt-2';
+    btn.innerHTML = '<i class="bi bi-eye"></i> 预览';
+    btn.onclick = togglePreview;
+    contentTextarea.parentNode.appendChild(btn);
+}
+</script>
+{% endblock %}

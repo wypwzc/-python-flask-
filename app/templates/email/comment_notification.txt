@@ -1,0 +1,12 @@
+新评论通知
+
+{{ comment.author_name }} 在文章《{{ post_title }}》中发表了新评论：
+
+{{ comment.content }}
+
+时间：{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '未知' }}
+IP：{{ comment.ip_address or '未知' }}
+
+前往后台查看：{{ url_for('admin.comment_list', _external=True) }}
+
+此邮件由博客系统自动发送

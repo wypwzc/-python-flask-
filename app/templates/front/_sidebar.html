@@ -1,0 +1,61 @@
+<!-- 侧边栏组件 - 用于分类/标签/搜索等页面 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-folder"></i> 分类</h5>
+    </div>
+    <div class="card-body py-2">
+        {% if categories %}
+        <ul class="list-unstyled mb-0">
+            {% for cat in categories %}
+            <li class="py-1 border-bottom">
+                <a href="{{ url_for('front.category_detail', slug=cat.slug) }}"
+                   class="text-decoration-none d-flex justify-content-between">
+                    <span><i class="bi bi-caret-right"></i> {{ cat.name }}</span>
+                    <span class="badge bg-secondary rounded-pill">{{ cat.post_count }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 热门文章 -->
+{% if recent_posts %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-fire"></i> 热门文章</h5>
+    </div>
+    <div class="card-body py-2">
+        <ul class="list-unstyled mb-0">
+            {% for post in recent_posts %}
+            <li class="py-2 border-bottom">
+                <a href="{{ url_for('front.post_detail', slug=post.slug) }}" class="text-decoration-none">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-truncate me-2">{{ post.title }}</span>
+                        <small class="text-muted flex-shrink-0">{{ post.views }} 阅读</small>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- 最新留言 -->
+{% if recent_comments %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-chat-dots"></i> 最新留言</h5>
+    </div>
+    <div class="card-body py-2">
+        {% for comment in recent_comments %}
+        <div class="py-2 border-bottom">
+            <div class="small">{{ comment.author_name }}：</div>
+            <small class="text-muted">{{ comment.content | truncate(50) }}</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

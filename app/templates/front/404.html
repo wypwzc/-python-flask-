@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}页面未找到 - 个人博客{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto text-center py-5">
+        <div class="error-page">
+            <h1 class="display-1 text-muted">404</h1>
+            <h4 class="mb-4"><i class="bi bi-emoji-frown"></i> 页面未找到</h4>
+            <p class="text-muted mb-4">您访问的页面不存在或已被删除</p>
+            <div>
+                <a href="{{ url_for('front.index') }}" class="btn btn-primary">
+                    <i class="bi bi-house-door"></i> 返回首页
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> 返回上一页
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

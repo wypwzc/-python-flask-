@@ -1,0 +1,221 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}仪表盘{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-speedometer2"></i> 仪表盘</h3>
+    <small class="text-muted">欢迎回来，{{ current_user.display_name }}</small>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">文章总数</h6>
+                        <h2 class="mb-0">{{ post_count }}</h2>
+                    </div>
+                    <i class="bi bi-journal-text fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">分类</h6>
+                        <h2 class="mb-0">{{ category_count }}</h2>
+                    </div>
+                    <i class="bi bi-folder fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">标签</h6>
+                        <h2 class="mb-0">{{ tag_count }}</h2>
+                    </div>
+                    <i class="bi bi-tags fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">留言 / 待审核</h6>
+                        <h2 class="mb-0">{{ comment_count }} / {{ pending_comments }}</h2>
+                    </div>
+                    <i class="bi bi-chat-dots fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 访问量趋势 -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-graph-up"></i> 最近 7 天访问量</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statsChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 总访问量 -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-globe"></i> 全站统计</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="display-4 text-primary">{{ total_stats.total_pv }}</div>
+                    <small class="text-muted">总浏览量 (PV)</small>
+                </div>
+                <div>
+                    <div class="display-4 text-success">{{ total_stats.total_uv }}</div>
+                    <small class="text-muted">独立访客 (UV)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 最新文章 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="card-title mb-0"><i class="bi bi-journal-text"></i> 最新文章</h5>
+                <a href="{{ url_for('admin.post_list') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_posts %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>状态</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in recent_posts %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('admin.post_edit', post_id=post.id) }}" class="text-decoration-none">
+                                    {{ post.title | truncate(30) }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if post.is_published %}
+                                <span class="badge bg-success">已发布</span>
+                                {% else %}
+                                <span class="badge bg-secondary">草稿</span>
+                                {% endif %}
+                                {% if post.is_top %}
+                                <span class="badge bg-warning text-dark">置顶</span>
+                                {% endif %}
+                            </td>
+                            <td><small class="text-muted">{{ post.created_at | format_datetime('%m-%d %H:%M') }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-3 text-muted">暂无文章</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 最新留言 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <h5 class="card-title mb-0"><i class="bi bi-chat-dots"></i> 最新留言</h5>
+                <a href="{{ url_for('admin.comment_list') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_comments %}
+                <div class="list-group list-group-flush">
+                    {% for comment in recent_comments %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong class="small">{{ comment.author_name }}</strong>
+                            <small class="text-muted">{{ comment.created_at | time_ago }}</small>
+                        </div>
+                        <p class="mb-0 small text-muted">{{ comment.content | truncate(60) }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3 text-muted">暂无留言</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('statsChart').getContext('2d');
+    const stats = {{ recent_stats | tojson | safe }};
+
+    const labels = stats.map(s => s.date);
+    const pvData = stats.map(s => s.pv || 0);
+    const uvData = stats.map(s => s.uv || 0);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'PV',
+                data: pvData,
+                borderColor: 'rgb(13, 110, 253)',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.3,
+                fill: true
+            }, {
+                label: 'UV',
+                data: uvData,
+                borderColor: 'rgb(25, 135, 84)',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

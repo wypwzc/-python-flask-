@@ -1,0 +1,165 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}留言管理{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3><i class="bi bi-chat-dots"></i> 留言管理</h3>
+    <div>
+        <a href="?status=all" class="btn btn-sm {% if status == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">全部</a>
+        <a href="?status=pending" class="btn btn-sm {% if status == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">待审核</a>
+        <a href="?status=approved" class="btn btn-sm {% if status == 'approved' %}btn-success{% else %}btn-outline-success{% endif %}">已审核</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if comments %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>作者</th>
+                    <th>内容</th>
+                    <th>文章</th>
+                    <th>状态</th>
+                    <th>IP</th>
+                    <th>时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comment in comments %}
+                <tr>
+                    <td>
+                        <strong>{{ comment.author_name }}</strong>
+                        {% if comment.is_admin %}
+                        <span class="badge bg-success">博主</span>
+                        {% endif %}
+                        <br>
+                        <small class="text-muted">{{ comment.author_email }}</small>
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 200px;">
+                            {{ comment.content }}
+                        </div>
+                        <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal"
+                                data-bs-target="#commentModal{{ comment.id }}">
+                            查看全文
+                        </button>
+                    </td>
+                    <td>
+                        {% if comment.post %}
+                        <a href="{{ url_for('front.post_detail', slug=comment.post.slug) }}"
+                           target="_blank" class="small">
+                            {{ comment.post.title | truncate(20) }}
+                        </a>
+                        {% else %}
+                        <span class="badge bg-info">留言板</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.comment_approve', comment_id=comment.id) }}"
+                              class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent">
+                                {% if comment.is_approved %}
+                                <span class="badge bg-success">已审核</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">待审核</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                    <td><small class="text-muted">{{ comment.ip_address or '-' }}</small></td>
+                    <td><small class="text-muted">{{ comment.created_at | format_datetime('%m-%d %H:%M') }}</small></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
+                                data-bs-target="#replyModal{{ comment.id }}" title="回复">
+                            <i class="bi bi-reply"></i>
+                        </button>
+                        <form method="POST" action="{{ url_for('admin.comment_delete', comment_id=comment.id) }}"
+                              class="d-inline" onsubmit="return confirm('确定删除该评论？')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="删除">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                <!-- 评论查看 Modal -->
+                <div class="modal fade" id="commentModal{{ comment.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ comment.author_name }} 的评论</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>邮箱：</strong>{{ comment.author_email }}</p>
+                                <p><strong>时间：</strong>{{ comment.created_at | format_datetime('%Y-%m-%d %H:%M') }}</p>
+                                <hr>
+                                <p>{{ comment.content }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 回复 Modal -->
+                <div class="modal fade" id="replyModal{{ comment.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="POST" action="{{ url_for('admin.comment_reply', comment_id=comment.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">回复 {{ comment.author_name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="bg-light p-3 rounded mb-3">
+                                        <strong>{{ comment.author_name }}</strong>
+                                        <p class="mb-0 mt-1">{{ comment.content }}</p>
+                                    </div>
+                                    <textarea class="form-control" name="content" rows="4" required></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="submit" class="btn btn-primary">回复</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 分页 -->
+        {% if pagination.pages > 1 %}
+        <nav class="p-3">
+            <ul class="pagination justify-content-center mb-0">
+                {% if pagination.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ pagination.prev_num }}&status={{ status }}">上一页</a></li>
+                {% endif %}
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page_num }}&status={{ status }}">{{ page_num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                {% if pagination.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ pagination.next_num }}&status={{ status }}">下一页</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-chat-dots display-1 text-muted"></i>
+            <p class="mt-3 text-muted">暂无留言</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
