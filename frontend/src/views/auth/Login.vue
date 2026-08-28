@@ -47,7 +47,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Monitor, User, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '../../stores/auth'
-import { frontUrl } from '../../utils/urls'
+import { frontUrl, adminUrl } from '../../utils/urls'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,7 +78,7 @@ async function submit() {
       router.replace(route.query.redirect)
     } else if (auth.isAdmin) {
       // 管理员：5888 登录进后台；5000 登录后引导去 5888 后台
-      isAdminPort ? router.replace('/admin') : window.location.href = 'http://localhost:5888'
+      isAdminPort ? router.replace('/admin') : window.location.href = adminUrl
     } else {
       router.replace('/')
     }

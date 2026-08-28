@@ -46,7 +46,8 @@ services:
       - "5000"
       - "5888"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/posts', timeout=3)"]
+      # /api/posts 需登录，健康检查用公开的 /api/auth/me
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/auth/me', timeout=3)"]
       interval: 30s
       timeout: 5s
       retries: 5

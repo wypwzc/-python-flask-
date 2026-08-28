@@ -5,6 +5,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { recordPv } from '../api/front'
+import { adminUrl } from '../utils/urls'
 
 import FrontLayout from '../layouts/FrontLayout.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
@@ -114,12 +115,16 @@ router.beforeEach(async (to) => {
   }
   if (to.name === 'master-login') {
     // 5000 上访问 /master → 引导到 5888 后台登录
-    window.location.replace('http://localhost:5888/master')
+    window.location.replace(`${adminUrl}/master`)
     return false
+  }
+  // 全站强制登录：前台所有页面必须登录后浏览（登录/注册页除外）
+  if (!auth.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.matched.some((r) => r.meta.requiresAuth)) {
     // 后台路由（/admin/*）只在 5888 提供，前台端口一律引导过去
-    window.location.replace(`http://localhost:5888${to.fullPath}`)
+    window.location.replace(`${adminUrl}${to.fullPath}`)
     return false
   }
   return undefined

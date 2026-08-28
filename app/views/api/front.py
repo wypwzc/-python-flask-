@@ -76,6 +76,7 @@ def _record_visitor():
 # ─── 文章 ────────────────────────────────────────────────
 
 @api_bp.route('/posts', methods=['GET'])
+@login_required
 def post_list():
     """
     文章列表（首页/分类/标签/搜索共用）
@@ -111,6 +112,7 @@ def post_list():
 
 
 @api_bp.route('/posts/<slug>', methods=['GET'])
+@login_required
 def post_detail(slug):
     """
     文章详情
@@ -162,6 +164,7 @@ def post_detail(slug):
 
 
 @api_bp.route('/posts/<slug>/like', methods=['POST'])
+@login_required
 def like_post(slug):
     """文章点赞（IP 去重，每 IP 每文一次）"""
     post = Post.query.filter_by(slug=slug).first_or_404()
@@ -240,6 +243,7 @@ def post_comment(slug):
 # ─── 评论与留言 ──────────────────────────────────────────
 
 @api_bp.route('/comments', methods=['GET'])
+@login_required
 def comment_list():
     """
     评论列表（平铺，前端组树）
@@ -261,6 +265,7 @@ def comment_list():
 
 
 @api_bp.route('/messages', methods=['GET'])
+@login_required
 def message_list():
     """留言板列表（一级留言，分页，按时间倒序）"""
     page, _ = _get_page_params(default_per_page=20)
@@ -308,6 +313,7 @@ def message_submit():
 # ─── 分类 / 标签 / 友链 ──────────────────────────────────
 
 @api_bp.route('/categories', methods=['GET'])
+@login_required
 def category_list():
     """分类列表"""
     categories = Category.query.order_by(Category.post_count.desc(), Category.name).all()
@@ -315,6 +321,7 @@ def category_list():
 
 
 @api_bp.route('/tags', methods=['GET'])
+@login_required
 def tag_list():
     """标签列表"""
     tags = Tag.query.order_by(Tag.post_count.desc(), Tag.name).all()
@@ -322,6 +329,7 @@ def tag_list():
 
 
 @api_bp.route('/links', methods=['GET'])
+@login_required
 def link_list():
     """友情链接（仅启用）"""
     links = Link.query.filter_by(is_active=True) \
@@ -332,6 +340,7 @@ def link_list():
 # ─── 归档 / 侧边栏 / PV 统计 ─────────────────────────────
 
 @api_bp.route('/archive', methods=['GET'])
+@login_required
 def archive():
     """文章归档（按年份/月份分组，年份倒序）"""
     from sqlalchemy import extract
@@ -360,6 +369,7 @@ def archive():
 
 
 @api_bp.route('/sidebar', methods=['GET'])
+@login_required
 def sidebar():
     """侧边栏聚合数据（替代原 context_processor 注入的全局变量）"""
     categories = Category.query.order_by(Category.post_count.desc()).all()
