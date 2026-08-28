@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+.env
+
+# Node / 前端构建产物
+frontend/node_modules/
+frontend/dist/
+
+# 数据库与临时文件
+*.db
+*.sqlite3
+tmp_*
+
+# IDE
+.idea/
+.vscode/

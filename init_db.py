@@ -171,13 +171,15 @@ def hello():
         print()
         print('🎉 数据库初始化完成！')
         print()
-        print('📝 启动方式：')
+        print('📝 启动方式（SPA 生产模式，前端已构建时）：')
         print('   python run.py')
+        print('   浏览器访问: http://localhost:5000')
         print()
-        print('🔗 访问地址：')
-        print('   前台: http://localhost:5000')
-        print('   后台: http://localhost:5000/admin')
-        print('   登录: http://localhost:5000/auth/login')
+        print('🔗 开发模式（前后端分离，热更新）：')
+        print('   1. python run.py            # Flask API :5000')
+        print('   2. cd frontend && npm run dev  # Vite SPA :5173')
+        print('   浏览器访问: http://localhost:5173')
+        print('   后台登录: /login')
 
 
 if __name__ == '__main__':

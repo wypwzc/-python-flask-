@@ -2,12 +2,13 @@
 Flask 应用工厂
 使用 create_app() 函数创建应用实例，支持不同环境配置
 """
-from datetime import datetime
-from flask import Flask, render_template
+import os
+from flask import Flask, request, abort, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import generate_csrf
 from config import config
 
 # 初始化扩展（延迟初始化，在 create_app 中绑定到 app）
@@ -15,6 +16,9 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 mail = Mail()
 csrf = CSRFProtect()
+
+# Vue 前端构建产物目录（存在时启用 SPA 托管）
+DIST_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'dist')
 
 
 def create_app(config_name='development'):
@@ -32,71 +36,38 @@ def create_app(config_name='development'):
     mail.init_app(app)
     csrf.init_app(app)
 
-    # 配置 Flask-Login
-    login_manager.login_view = 'auth.login'
-    login_manager.login_message = '请先登录后再访问后台管理'
-    login_manager.login_message_category = 'warning'
+    # 配置 Flask-Login（401 由前端拦截器统一跳转登录页）
+    login_manager.login_view = None
 
-    # 注册蓝图
-    from app.views.front import front_bp
-    from app.views.admin import admin_bp
-    from app.views.auth import auth_bp
+    # 注册 API 蓝图（前台/后台均为 SPA 调用的 REST 接口）
+    from app.views.api import api_bp
 
-    app.register_blueprint(front_bp)
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(api_bp)
 
-    # 注册模板上下文处理器
-    @app.context_processor
-    def inject_global_data():
-        """注入全局模板变量"""
-        from app.models.category import Category
-        from app.models.post import Post
-        from app.models.comment import Comment
-        from app.models.site_stats import SiteStats
-        from app.models.user import User
-        from flask_wtf.csrf import generate_csrf
+    # ─── Vue 3 SPA 支持 ──────────────────────────────
 
-        categories = Category.query.order_by(Category.post_count.desc()).all()
-        recent_posts = Post.query.filter_by(is_published=True)\
-            .order_by(Post.published_at.desc()).limit(5).all()
-        recent_comments = Comment.query.filter_by(is_approved=True)\
-            .order_by(Comment.created_at.desc()).limit(5).all()
-        total_stats = SiteStats.get_total_stats()
-        blog_admin = User.query.filter_by(is_admin=True).first()
-        return {
-            'categories': categories,
-            'recent_posts': recent_posts,
-            'recent_comments': recent_comments,
-            'total_stats': total_stats,
-            'blog_admin': blog_admin,
-            'now': datetime.now,
-            'csrf_token': generate_csrf
-        }
+    # 每个响应下发 CSRF token cookie，前端读取后回传 X-CSRFToken 头
+    @app.after_request
+    def set_csrf_cookie(response):
+        token = generate_csrf()
+        response.set_cookie('csrf_token', token, httponly=False, samesite='Lax')
+        return response
 
-    # 注册错误处理器
-    @app.errorhandler(404)
-    def not_found_error(error):
-        """404 页面"""
-        return render_template('front/404.html'), 404
+    # 注册错误处理器（/api 返回 JSON，其余返回 SPA index.html）
+    from app.views.api.errors import register_error_handlers
+    register_error_handlers(app)
 
-    @app.errorhandler(500)
-    def internal_error(error):
-        """500 页面"""
-        db.session.rollback()
-        return render_template('front/500.html'), 500
-
-    # 注册模板过滤器
-    from app.utils.helpers import (
-        format_datetime, truncate_text, render_markdown,
-        time_ago, count_words, calculate_reading_time
-    )
-    app.add_template_filter(format_datetime, 'format_datetime')
-    app.add_template_filter(truncate_text, 'truncate')
-    app.add_template_filter(render_markdown, 'markdown')
-    app.add_template_filter(time_ago, 'time_ago')
-    app.add_template_filter(count_words, 'word_count')
-    app.add_template_filter(calculate_reading_time, 'reading_time')
+    # 生产模式：托管 Vue 构建产物 + history 路由 fallback
+    if os.path.isdir(DIST_DIR):
+        @app.route('/', defaults={'path': ''})
+        @app.route('/<path:path>')
+        def serve_spa(path):
+            if path.startswith(('api/', 'static/')):
+                abort(404)
+            file_path = os.path.join(DIST_DIR, path)
+            if path and os.path.isfile(file_path):
+                return send_from_directory(DIST_DIR, path)
+            return send_from_directory(DIST_DIR, 'index.html')
 
     return app
 

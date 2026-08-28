@@ -11,12 +11,14 @@ import re
 def admin_required(f):
     """
     管理员权限验证装饰器
-    用于保护后台管理路由，非管理员访问返回 403
+    用于保护后台管理路由，未登录返回 401，非管理员返回 403（JSON）
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
-            abort(403)
+        if not current_user.is_authenticated:
+            return jsonify({'success': False, 'message': '请先登录'}), 401
+        if not current_user.is_admin:
+            return jsonify({'success': False, 'message': '没有权限访问'}), 403
         return f(*args, **kwargs)
     return decorated_function
 
@@ -64,7 +66,7 @@ def rate_limit(max_per_minute=60):
 def comment_rate_limit(f):
     """
     评论提交频率限制装饰器
-    限制同一 IP 60 秒内只能评论一次
+    限制同一 IP 60 秒内只能评论一次，超限返回 429 JSON
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -74,9 +76,7 @@ def comment_rate_limit(f):
         import time
         current_time = time.time()
         if current_time - last_comment_time < 60:
-            from flask import flash
-            flash('评论过于频繁，请 60 秒后再试', 'warning')
-            return f(*args, **kwargs)
+            return jsonify({'success': False, 'message': '评论过于频繁，请 60 秒后再试'}), 429
         # 记录本次评论时间
         session[f'last_comment_time_{ip}'] = current_time
         return f(*args, **kwargs)
@@ -97,12 +97,14 @@ def sensitive_words_filter(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if request.method == 'POST':
-            content = request.form.get('content', '')
+            # 兼容表单提交与 JSON body
+            if request.is_json:
+                content = (request.get_json(silent=True) or {}).get('content', '')
+            else:
+                content = request.form.get('content', '')
             content_lower = content.lower()
             for word in SENSITIVE_WORDS:
                 if word in content_lower:
-                    from flask import flash
-                    flash('内容包含不当词汇，请修改', 'danger')
-                    return f(*args, **kwargs)
+                    return jsonify({'success': False, 'message': '内容包含不当词汇，请修改'}), 400
         return f(*args, **kwargs)
     return decorated_function
