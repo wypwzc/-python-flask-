@@ -103,6 +103,7 @@ import { getSidebar } from '../api/front'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 import Sidebar from '../components/Sidebar.vue'
+import { adminUrl } from '../utils/urls'
 
 const route = useRoute()
 const router = useRouter()
@@ -130,7 +131,7 @@ const userInitial = computed(() => {
 async function onUserCommand(command) {
   if (command === 'admin') {
     // 后台只在 5888 端口提供
-    window.location.href = 'http://localhost:5888'
+    window.location.href = adminUrl
   } else if (command === 'logout') {
     await auth.logout()
     ElMessage.success('已退出登录')

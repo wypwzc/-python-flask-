@@ -35,7 +35,7 @@
         <router-link :to="{ name: 'register', query: $route.query }">没有账号？注册 →</router-link>
       </div>
       <div v-else class="login-footer">
-        <a href="http://localhost:5000">访问博客前台 →</a>
+        <a :href="frontUrl">访问博客前台 →</a>
       </div>
     </el-card>
   </div>
@@ -47,6 +47,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Monitor, User, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '../../stores/auth'
+import { frontUrl } from '../../utils/urls'
 
 const route = useRoute()
 const router = useRouter()

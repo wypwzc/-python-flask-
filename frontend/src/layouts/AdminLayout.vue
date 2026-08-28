@@ -54,7 +54,7 @@
       <el-header class="admin-header">
         <h2 class="page-title">{{ route.meta.title || '后台管理' }}</h2>
         <div class="header-actions">
-          <a href="http://localhost:5000" class="view-site">前台首页</a>
+          <a :href="frontUrl" class="view-site">前台首页</a>
           <el-dropdown trigger="click" @command="onCommand">
             <span class="user-info">
               <el-avatar v-if="auth.user?.avatar" :src="auth.user.avatar" :size="28" />
@@ -95,6 +95,7 @@ import {
   ChatDotRound, Link, User, ArrowDown, SwitchButton,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
+import { frontUrl } from '../utils/urls'
 
 const route = useRoute()
 const router = useRouter()
