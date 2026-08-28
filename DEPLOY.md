@@ -73,22 +73,19 @@ MAIL_PASSWORD=邮箱授权码
 ADMIN_EMAIL=你的邮箱
 ```
 
-### 2. 确认域名与证书路径
+### 2. 确认证书路径
 
-`nginx/nginx.conf` 已配置为域名 **wzcwyp.xyz**（证书路径 `/etc/letsencrypt/live/wzcwyp.xyz/`）。只需确认证书实际位置：
+证书文件已放在服务器 `/root/ssl/`：
+- `www.wzcwyp.xyz.pem`（证书）
+- `www.wzcwyp.xyz.key`（私钥）
 
-- 证书在 `/etc/letsencrypt/live/wzcwyp.xyz/`（certbot 默认）→ **无需任何修改**，已自动挂载进容器
-- 证书在别的路径（如阿里云控制台下载的证书放在 `/etc/nginx/cert/`）→ 修改两处：
-  1. `docker-compose.yml` 中 nginx 的 `volumes`：挂载你的证书目录
-  2. `nginx/nginx.conf` 中 `ssl_certificate` / `ssl_certificate_key` 两个路径
+`nginx/nginx.conf` 和 `docker-compose.yml` **已按此配置好（域名 www.wzcwyp.xyz、证书目录 /root/ssl），无需修改**。
 
-> 还没有证书？域名解析生效后执行（首次免费申请，之后可配自动续期）：
-> ```bash
-> sudo docker run --rm -p 80:80 \
->   -v /etc/letsencrypt:/etc/letsencrypt \
->   -v /var/www/certbot:/var/www/certbot \
->   certbot/certbot certonly --standalone -d wzcwyp.xyz
-> ```
+注意：证书只覆盖 `www.wzcwyp.xyz` 子域，请使用 `https://www.wzcwyp.xyz` 访问（裸域 HTTP 会自动 301 跳转到 www；裸域 HTTPS 因证书不含裸域会提示不安全，建议始终用 www）。
+
+> 如果以后更换证书位置，改两处即可：
+> 1. `docker-compose.yml` 中 nginx 的 `volumes`：挂载证书所在目录
+> 2. `nginx/nginx.conf` 中 `ssl_certificate` / `ssl_certificate_key` 两个路径
 
 ## 四、构建并启动
 
@@ -107,8 +104,8 @@ sudo docker compose logs -f app      # 应用日志（Ctrl+C 退出查看）
 
 | 验证项 | 地址 |
 |--------|------|
-| 前台 | `https://wzcwyp.xyz`（能看到示例文章"欢迎来到个人博客！"） |
-| 后台 | `https://wzcwyp.xyz:5888` → 登录 `admin` / `admin123` |
+| 前台 | `https://www.wzcwyp.xyz`（能看到示例文章"欢迎来到个人博客！"） |
+| 后台 | `https://www.wzcwyp.xyz:5888` → 登录 `admin` / `admin123` |
 | 写文章 | 后台 → 写文章 → 填标题和 Markdown 正文 → 发布 |
 
 **首次登录后请立即修改 admin 密码**（后台 → 个人设置）。
