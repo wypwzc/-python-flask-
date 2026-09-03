@@ -11,6 +11,11 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
+# 时区数据（slim 镜像不含，配合 TZ=Asia/Shanghai 使用）
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
 # 依赖
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

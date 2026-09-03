@@ -8,6 +8,7 @@ services:
     image: mysql:8.0
     restart: always
     environment:
+      TZ: Asia/Shanghai   # 服务器时间统一北京时间（上海）
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置 MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: blog_db
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
@@ -29,6 +30,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      TZ: Asia/Shanghai   # datetime.now() 使用北京时间
       FLASK_ENV: production
       SECRET_KEY: ${SECRET_KEY:?请在 .env 中设置 SECRET_KEY}
       # 容器网络内通过 mysql 主机名访问数据库

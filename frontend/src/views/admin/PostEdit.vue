@@ -27,21 +27,16 @@
       </el-row>
 
       <el-row :gutter="20">
-        <el-col :xs="24" :md="8">
+        <el-col :xs="24" :md="12">
           <el-form-item label="分类" prop="category_id">
             <el-select v-model="form.category_id" placeholder="选择分类" clearable class="full-width">
               <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :xs="24" :md="8">
+        <el-col :xs="24" :md="12">
           <el-form-item label="标签（逗号分隔）">
             <el-input v-model="tagsText" placeholder="如：Vue, Python, 随笔" />
-          </el-form-item>
-        </el-col>
-        <el-col :xs="24" :md="8">
-          <el-form-item label="封面图">
-            <CoverUpload v-model="form.cover_image" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -93,7 +88,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { MagicStick } from '@element-plus/icons-vue'
 import { createAdminPost, getAdminCategories, getAdminPost, updateAdminPost } from '../../api/admin'
-import CoverUpload from '../../components/CoverUpload.vue'
 import MarkdownPreview from '../../components/MarkdownPreview.vue'
 
 const route = useRoute()
@@ -112,7 +106,6 @@ const form = reactive({
   summary: '',
   content: '',
   category_id: null,
-  cover_image: '',
   tags: [],
   is_published: true,
   is_top: false,
@@ -160,7 +153,6 @@ async function load() {
       summary: post.summary || '',
       content: post.content || '',
       category_id: post.category?.id ?? null,
-      cover_image: post.cover_image_path || '',
       tags: [...(post.tags || [])],
       is_published: !!post.is_published,
       is_top: !!post.is_top,
@@ -181,7 +173,6 @@ async function save(publish) {
       summary: form.summary,
       content: form.content,
       category_id: form.category_id,
-      cover_image: form.cover_image,
       tags: form.tags,
       is_published: publish,
       is_top: form.is_top,

@@ -82,13 +82,10 @@
 
     <!-- 页脚 -->
     <footer class="front-footer">
-      <div>
-        © {{ year }}
-        <router-link to="/">{{ sidebar.blog_admin?.display_name || sidebar.blog_admin?.nickname || '博客' }}</router-link>
-        <span class="footer-stats">
-          本站已运行 · 总访问 {{ sidebar.total_stats?.total_pv || 0 }} PV /
-          {{ sidebar.total_stats?.total_uv || 0 }} UV
-        </span>
+      <div class="footer-icp">
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">浙ICP备2026067737号</a>
+        <span class="icp-sep">|</span>
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">浙ICP备2026067737号-1</a>
       </div>
     </footer>
   </div>
@@ -119,7 +116,6 @@ const sidebar = ref({
   blog_admin: null,
 })
 
-const year = new Date().getFullYear()
 // 文章详情页自带 TOC 布局，隐藏共享侧边栏
 const showSidebar = computed(() => route.name !== 'post-detail')
 
@@ -290,9 +286,8 @@ onMounted(async () => {
   border-color: #8bb9fe;
 }
 
-.footer-stats {
-  margin-left: 12px;
-  font-size: 0.8rem;
+.icp-sep {
+  margin: 0 10px;
   color: #6c757d;
 }
 
