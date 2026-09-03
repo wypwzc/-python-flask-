@@ -16,9 +16,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# 依赖
+# 依赖（-i 阿里云 PyPI 镜像：国内服务器访问官方源 pypi.org 易超时）
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 
 # 项目代码（.dockerignore 已排除 .env / node_modules / .git 等）
 COPY . .
