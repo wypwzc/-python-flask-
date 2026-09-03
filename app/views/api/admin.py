@@ -196,6 +196,9 @@ def dashboard_stats():
         {'date': s.date.strftime('%Y-%m-%d'), 'pv': s.pv or 0, 'uv': s.uv or 0}
         for s in recent_stats_raw
     ]
+    # 普通注册用户数（不含管理员）+ 今日新增
+    today = datetime.now().date()
+    users = User.query.filter_by(is_admin=False)
     return jsonify({
         'counts': {
             'posts': Post.query.count(),
@@ -203,6 +206,8 @@ def dashboard_stats():
             'tags': Tag.query.count(),
             'comments': Comment.query.count(),
             'pending_comments': Comment.query.filter_by(is_approved=False).count(),
+            'users': users.count(),
+            'users_today': users.filter(User.created_at >= today).count(),
         },
         'total_stats': SiteStats.get_total_stats(),
         'recent_stats': recent_stats,
@@ -211,6 +216,7 @@ def dashboard_stats():
             {**comment_to_dict(c), 'post_title': c.post.title if c.post else '全站留言板'}
             for c in Comment.query.order_by(Comment.created_at.desc()).limit(5).all()
         ],
+        'recent_users': [user_to_dict(u) for u in users.order_by(User.created_at.desc()).limit(5).all()],
     })
 
 

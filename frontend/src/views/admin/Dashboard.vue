@@ -2,37 +2,49 @@
   <div class="dashboard-page">
     <!-- 统计卡片 -->
     <el-row :gutter="16" class="stat-cards">
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="3">
         <div class="stat-card">
           <div class="stat-card-value">{{ counts.posts }}</div>
           <div class="stat-card-label">文章总数</div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="3">
+        <div class="stat-card">
+          <div class="stat-card-value">{{ counts.users }}</div>
+          <div class="stat-card-label">注册用户</div>
+        </div>
+      </el-col>
+      <el-col :xs="12" :sm="8" :md="3">
+        <div class="stat-card">
+          <div class="stat-card-value">{{ counts.users_today }}</div>
+          <div class="stat-card-label">今日注册</div>
+        </div>
+      </el-col>
+      <el-col :xs="12" :sm="8" :md="3">
         <div class="stat-card">
           <div class="stat-card-value">{{ counts.pending_comments }}</div>
           <div class="stat-card-label">待审核评论</div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="3">
         <div class="stat-card">
           <div class="stat-card-value">{{ counts.comments }}</div>
           <div class="stat-card-label">评论总数</div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="3">
         <div class="stat-card">
           <div class="stat-card-value">{{ counts.categories }}</div>
           <div class="stat-card-label">分类数</div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="3">
         <div class="stat-card">
           <div class="stat-card-value">{{ counts.tags }}</div>
           <div class="stat-card-label">标签数</div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="3">
         <div class="stat-card">
           <div class="stat-card-value">{{ totalStats.total_pv || 0 }}</div>
           <div class="stat-card-label">累计 PV</div>
@@ -48,7 +60,7 @@
 
     <!-- 最新数据 -->
     <el-row :gutter="16">
-      <el-col :xs="24" :md="12">
+      <el-col :xs="24" :md="8">
         <div class="panel">
           <h3 class="panel-title">最新文章</h3>
           <div v-for="p in recentPosts" :key="p.id" class="panel-item">
@@ -62,7 +74,7 @@
           <el-empty v-if="!recentPosts.length" description="暂无文章" :image-size="48" />
         </div>
       </el-col>
-      <el-col :xs="24" :md="12">
+      <el-col :xs="24" :md="8">
         <div class="panel">
           <h3 class="panel-title">最新评论</h3>
           <div v-for="c in recentComments" :key="c.id" class="panel-item">
@@ -72,6 +84,16 @@
             <span class="item-meta">{{ c.post_title }} · {{ timeAgo(c.created_at) }}</span>
           </div>
           <el-empty v-if="!recentComments.length" description="暂无评论" :image-size="48" />
+        </div>
+      </el-col>
+      <el-col :xs="24" :md="8">
+        <div class="panel">
+          <h3 class="panel-title">最新注册用户</h3>
+          <div v-for="u in recentUsers" :key="u.id" class="panel-item">
+            <div class="item-title">{{ u.display_name || u.username }}（@{{ u.username }}）</div>
+            <span class="item-meta">{{ timeAgo(u.created_at) }}注册</span>
+          </div>
+          <el-empty v-if="!recentUsers.length" description="暂无注册用户" :image-size="48" />
         </div>
       </el-col>
     </el-row>
@@ -85,10 +107,11 @@ import { getDashboardStats } from '../../api/admin'
 import { formatDateTime, timeAgo } from '../../utils/date'
 import { truncate } from '../../utils/text'
 
-const counts = ref({ posts: 0, categories: 0, tags: 0, comments: 0, pending_comments: 0 })
+const counts = ref({ posts: 0, categories: 0, tags: 0, comments: 0, pending_comments: 0, users: 0, users_today: 0 })
 const totalStats = ref({ total_pv: 0, total_uv: 0 })
 const recentPosts = ref([])
 const recentComments = ref([])
+const recentUsers = ref([])
 
 const chartRef = ref()
 let chart = null
@@ -99,6 +122,7 @@ async function load() {
   totalStats.value = data.total_stats
   recentPosts.value = data.recent_posts
   recentComments.value = data.recent_comments
+  recentUsers.value = data.recent_users || []
   await nextTick()
   renderChart(data.recent_stats)
 }
