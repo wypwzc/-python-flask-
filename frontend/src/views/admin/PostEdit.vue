@@ -66,7 +66,6 @@
         <el-checkbox v-model="form.is_top">置顶</el-checkbox>
         <el-checkbox v-model="form.allow_comment">允许评论</el-checkbox>
         <div class="editor-buttons">
-          <el-button @click="previewOpen = true">预览</el-button>
           <el-button @click="save(false)">存为草稿</el-button>
           <el-button type="primary" :loading="saving" @click="save(true)">
             {{ isEdit ? '更新并发布' : '发布' }}
@@ -74,11 +73,6 @@
         </div>
       </div>
     </el-form>
-
-    <!-- 预览抽屉 -->
-    <el-drawer v-model="previewOpen" title="Markdown 预览" size="50%">
-      <MarkdownPreview :content="form.content" />
-    </el-drawer>
   </div>
 </template>
 
@@ -88,7 +82,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { MagicStick } from '@element-plus/icons-vue'
 import { createAdminPost, getAdminCategories, getAdminPost, updateAdminPost } from '../../api/admin'
-import MarkdownPreview from '../../components/MarkdownPreview.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -96,7 +89,6 @@ const router = useRouter()
 const isEdit = computed(() => !!route.params.id)
 const loading = ref(true)
 const saving = ref(false)
-const previewOpen = ref(false)
 const categories = ref([])
 const formRef = ref()
 

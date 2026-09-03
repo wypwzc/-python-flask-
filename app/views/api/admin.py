@@ -339,20 +339,6 @@ def admin_post_toggle_publish(post_id):
     return jsonify({'success': True, 'is_published': post.is_published})
 
 
-@api_bp.route('/admin/posts/render-preview', methods=['POST'])
-@admin_required
-def admin_post_render_preview():
-    """Markdown 预览（服务端渲染，与最终保存渲染一致）"""
-    data = request.get_json(silent=True) or {}
-    content = data.get('content') or ''
-    try:
-        html = render_markdown(content)
-    except Exception as e:
-        current_app.logger.error(f'Markdown 渲染失败: {e}', exc_info=True)
-        return jsonify({'success': False, 'message': f'渲染失败：{e}'}), 400
-    return jsonify({'html': html})
-
-
 # ─── 图片上传 ────────────────────────────────────────────
 
 @api_bp.route('/admin/upload/cover', methods=['POST'])

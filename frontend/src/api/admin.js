@@ -13,7 +13,6 @@ export const deleteAdminPost = (id) => http.delete(`/admin/posts/${id}`)
 export const batchDeletePosts = (ids) => http.post('/admin/posts/batch-delete', { ids })
 export const toggleTop = (id) => http.post(`/admin/posts/${id}/toggle-top`)
 export const togglePublish = (id) => http.post(`/admin/posts/${id}/toggle-publish`)
-export const renderPreview = (content) => http.post('/admin/posts/render-preview', { content })
 
 // 上传
 export const uploadCover = (file) => {
